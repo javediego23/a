@@ -216,7 +216,7 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip formatter={(val: number) => `S/ ${val.toLocaleString('es-PE')}`} />
+                                <Tooltip formatter={(val: any) => `S/ ${Number(val || 0).toLocaleString('es-PE')}`} />
                                 <Legend />
                             </PieChart>
                         </ResponsiveContainer>
@@ -243,7 +243,7 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                                             <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip formatter={(val: number) => `S/ ${val.toLocaleString('es-PE')}`} />
+                                    <Tooltip formatter={(val: any) => `S/ ${Number(val || 0).toLocaleString('es-PE')}`} />
                                     <Legend />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -262,7 +262,7 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="cropName" />
                                 <YAxis />
-                                <Tooltip formatter={(val: number) => `$${val.toLocaleString()}`} />
+                                <Tooltip formatter={(val: any) => `S/ ${Number(val || 0).toLocaleString('es-PE')}`} />
                                 <Bar dataKey="profit" name="Ganancia Neta" radius={[4, 4, 0, 0]}>
                                     {data.landStats.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.profit >= 0 ? '#16a34a' : '#dc2626'} />
