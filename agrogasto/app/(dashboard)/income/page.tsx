@@ -1,5 +1,4 @@
 import { getAllActiveSeasons } from '@/app/actions/transaction';
-import { getUserRole } from '@/utils/permissions';
 import { prisma } from '@/lib/prisma';
 import GlobalIncomeManager from './income-manager';
 import styles from './income.module.css';
@@ -22,10 +21,9 @@ async function getAllIncome() {
 }
 
 export default async function IncomePage() {
-    const [incomes, activeSeasonsRes, userRole] = await Promise.all([
+    const [incomes, activeSeasonsRes] = await Promise.all([
         getAllIncome(),
-        getAllActiveSeasons(),
-        getUserRole()
+        getAllActiveSeasons()
     ]);
 
     const activeSeasons = activeSeasonsRes.data || [];
@@ -37,7 +35,7 @@ export default async function IncomePage() {
                 <p className={styles.subtitle}>Gestione las ventas y entradas de dinero</p>
             </header>
 
-            <GlobalIncomeManager initialIncomes={incomes} activeSeasons={activeSeasons} userRole={userRole} />
+            <GlobalIncomeManager initialIncomes={incomes} activeSeasons={activeSeasons} />
         </div>
     );
 }

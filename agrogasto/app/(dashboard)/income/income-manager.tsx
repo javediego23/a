@@ -29,8 +29,11 @@ type Income = {
     };
 };
 
-export default function GlobalIncomeManager({ initialIncomes, activeSeasons, userRole }: { initialIncomes: Income[], activeSeasons: Season[], userRole: string | null | undefined }) {
-    const canEdit = userRole === 'OWNER';
+import { useRole } from '@/app/context/RoleContext';
+
+export default function GlobalIncomeManager({ initialIncomes, activeSeasons }: { initialIncomes: Income[], activeSeasons: Season[] }) {
+    const { role } = useRole();
+    const canEdit = role === 'OWNER';
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');

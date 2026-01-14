@@ -19,8 +19,11 @@ type Land = {
     _count?: { seasons: number };
 };
 
-export default function LandManager({ initialLands, userRole }: { initialLands: Land[], userRole: string | null | undefined }) {
-    const canEdit = userRole === 'OWNER';
+import { useRole } from '@/app/context/RoleContext';
+
+export default function LandManager({ initialLands }: { initialLands: Land[] }) {
+    const { role } = useRole();
+    const canEdit = role === 'OWNER';
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [landType, setLandType] = useState('OWNED');

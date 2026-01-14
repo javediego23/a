@@ -12,8 +12,11 @@ type Crop = {
     _count?: { seasons: number };
 };
 
-export default function CropManager({ initialCrops, lands, userRole }: { initialCrops: Crop[], lands: { id: number, name: string }[], userRole: string | null | undefined }) {
-    const canEdit = userRole === 'OWNER';
+import { useRole } from '@/app/context/RoleContext';
+
+export default function CropManager({ initialCrops, lands }: { initialCrops: Crop[], lands: { id: number, name: string }[] }) {
+    const { role } = useRole();
+    const canEdit = role === 'OWNER';
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
 

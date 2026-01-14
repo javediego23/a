@@ -1,5 +1,4 @@
 import { getCrops } from '@/app/actions/crop';
-import { getUserRole } from '@/utils/permissions';
 import { prisma } from '@/lib/prisma';
 import CropManager from './crop-manager';
 import styles from './crops.module.css';
@@ -9,10 +8,9 @@ async function getLandsSimple() {
 }
 
 export default async function CropsPage() {
-    const [cropsRes, lands, userRole] = await Promise.all([
+    const [cropsRes, lands] = await Promise.all([
         getCrops(),
-        getLandsSimple(),
-        getUserRole()
+        getLandsSimple()
     ]);
 
     const crops = cropsRes.data || [];
@@ -24,7 +22,7 @@ export default async function CropsPage() {
                 <p className={styles.subtitle}>Catálogo de productos agrícolas</p>
             </header>
 
-            <CropManager initialCrops={crops} lands={lands} userRole={userRole} />
+            <CropManager initialCrops={crops} lands={lands} />
         </div>
     );
 }

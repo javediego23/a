@@ -16,6 +16,7 @@ import {
     FileText,
     Settings
 } from 'lucide-react';
+import { RoleProvider } from '@/app/context/RoleContext';
 import { getCurrentUserName } from '@/app/actions/user-info';
 import styles from './dashboard.module.css';
 
@@ -126,7 +127,9 @@ export default function DashboardLayoutClient({
             </aside>
 
             <main className={styles.main}>
-                {children}
+                <RoleProvider>
+                    {children}
+                </RoleProvider>
             </main>
         </div>
     );
