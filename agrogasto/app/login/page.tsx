@@ -7,7 +7,7 @@ import styles from './login.module.css';
 import { createClient } from '@/utils/supabase/client';
 
 export default function LoginPage() {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -21,10 +21,6 @@ export default function LoginPage() {
         setError('');
 
         try {
-            // Check if input is an email (contains @). If so, use it directly.
-            // Otherwise, append dummy domain for username-based login.
-            const email = username.includes('@') ? username : `${username}@agrogasto.app`;
-
             const { error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
@@ -60,10 +56,10 @@ export default function LoginPage() {
                     <div className={styles.inputGroup}>
                         <User className={styles.inputIcon} size={20} />
                         <input
-                            type="text"
-                            placeholder="Usuario"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            type="email"
+                            placeholder="Correo Electrónico"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className={styles.input}
                             required
                         />
