@@ -138,9 +138,9 @@ export default function UserManagement() {
                                         className="bg-transparent border border-gray-300 rounded px-2 py-1 text-sm focus:border-green-500 outline-none"
                                         disabled={user.role === 'OWNER'} // Prevent demoting other owners if simpler logic desired
                                     >
-                                        <option value="VIEWER">Espectador</option>
-                                        <option value="EDITOR">Editor</option>
-                                        <option value="OWNER">Dueño</option>
+                                        <option value="VIEWER">ESPECTADOR</option>
+                                        <option value="EDITOR">EDITOR</option>
+                                        <option value="OWNER">DUEÑO</option>
                                     </select>
                                 </td>
                                 <td className="p-4 text-right">
@@ -227,9 +227,9 @@ export default function UserManagement() {
                                     onChange={(e) => setRole(e.target.value)}
                                     className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500 outline-none"
                                 >
-                                    <option value="VIEWER">Espectador (Solo ver + IA)</option>
-                                    <option value="EDITOR">Editor (Editar datos)</option>
-                                    <option value="OWNER">Dueño (Admin total)</option>
+                                    <option value="VIEWER">ESPECTADOR (Solo lectura)</option>
+                                    <option value="EDITOR">EDITOR (Gestión completa)</option>
+                                    <option value="OWNER">DUEÑO (Administración total)</option>
                                 </select>
                             </div>
                             <div className="flex justify-end gap-2 mt-6">
