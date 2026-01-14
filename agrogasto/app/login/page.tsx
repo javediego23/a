@@ -21,8 +21,9 @@ export default function LoginPage() {
         setError('');
 
         try {
-            // Append dummy domain to satisfy Supabase email requirement
-            const email = `${username}@agrogasto.app`;
+            // Check if input is an email (contains @). If so, use it directly.
+            // Otherwise, append dummy domain for username-based login.
+            const email = username.includes('@') ? username : `${username}@agrogasto.app`;
 
             const { error } = await supabase.auth.signInWithPassword({
                 email,

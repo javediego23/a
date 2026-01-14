@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/utils/supabase/server';
+import { canEdit } from '@/utils/permissions';
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
@@ -32,9 +33,7 @@ export async function getSeasonDetails(seasonId: number) {
 }
 
 export async function addExpense(formData: FormData) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado (Rol requerido: Editor)' };
     const seasonId = parseInt(formData.get('seasonId') as string);
     const date = new Date(formData.get('date') as string);
     const amount = parseFloat(formData.get('amount') as string);
@@ -62,9 +61,7 @@ export async function addExpense(formData: FormData) {
 }
 
 export async function addIncome(formData: FormData) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado (Rol requerido: Editor)' };
     const seasonId = parseInt(formData.get('seasonId') as string);
     const date = new Date(formData.get('date') as string);
     const quantity = parseFloat(formData.get('quantity') as string);
@@ -90,9 +87,7 @@ export async function addIncome(formData: FormData) {
 }
 
 export async function deleteExpense(id: number) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
     try {
         await prisma.expense.update({ where: { id }, data: { isVoided: true } });
         revalidatePath('/lands', 'layout');
@@ -105,9 +100,7 @@ export async function deleteExpense(id: number) {
 }
 
 export async function deleteIncome(id: number) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
     try {
         await prisma.income.update({ where: { id }, data: { isVoided: true } });
         revalidatePath('/lands', 'layout');
@@ -121,9 +114,7 @@ export async function deleteIncome(id: number) {
 
 // ... existing code ...
 export async function updateExpense(id: number, formData: FormData) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
     const seasonId = parseInt(formData.get('seasonId') as string);
     const date = new Date(formData.get('date') as string);
     const amount = parseFloat(formData.get('amount') as string);
@@ -149,9 +140,7 @@ export async function updateExpense(id: number, formData: FormData) {
 }
 
 export async function updateIncome(id: number, formData: FormData) {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { success: false, error: 'Unauthorized' };
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
     const seasonId = parseInt(formData.get('seasonId') as string);
     const date = new Date(formData.get('date') as string);
     const quantity = parseFloat(formData.get('quantity') as string);

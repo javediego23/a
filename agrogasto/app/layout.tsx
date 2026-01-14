@@ -17,6 +17,8 @@ export const viewport: Viewport = {
   maximumScale: 1,
 };
 
+import { ThemeProvider } from './context/ThemeContext';
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -24,7 +26,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
+      </body>
     </html >
   );
 }
