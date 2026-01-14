@@ -295,7 +295,7 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                         </button>
                     </div>
 
-                    <div className="flex-grow bg-slate-50 rounded-xl p-4 border border-slate-100 text-sm leading-relaxed text-slate-700">
+                    <div className="flex-grow bg-slate-50 rounded-xl p-4 border border-slate-100 text-sm leading-relaxed text-slate-800">
                         {analysis.general ? (
                             <p className="whitespace-pre-wrap">{analysis.general}</p>
                         ) : (
@@ -325,7 +325,7 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                         </button>
                     </div>
 
-                    <div className="flex-grow bg-slate-50 rounded-xl p-4 border border-slate-100 text-sm leading-relaxed text-slate-700">
+                    <div className="flex-grow bg-slate-50 rounded-xl p-4 border border-slate-100 text-sm leading-relaxed text-slate-800">
                         {analysis.crops ? (
                             <p className="whitespace-pre-wrap">{analysis.crops}</p>
                         ) : (

@@ -11,6 +11,7 @@ export default function Sidebar() {
         { name: 'Gastos', href: '/expenses' },
         { name: 'Ingresos', href: '/income' },
         { name: 'Terrenos', href: '/terrains' },
+        { name: 'Configuraciones', href: '/settings' },
     ];
 
     return (
