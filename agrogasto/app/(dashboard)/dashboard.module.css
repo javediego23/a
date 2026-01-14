@@ -1,0 +1,142 @@
+.container {
+    display: flex;
+    min-height: 100vh;
+    background-color: #f3f4f6;
+}
+
+.sidebar {
+    width: 256px;
+    background-color: white;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    z-index: 50;
+    transition: transform 0.3s ease-in-out;
+}
+
+.mobileOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 40;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    .mobileOverlay.open {
+        display: block;
+    }
+
+    .main {
+        margin-left: 0 !important;
+        width: 100%;
+        padding-top: 4rem;
+        /* Space for mobile header */
+    }
+}
+
+.logo {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.nav {
+    flex: 1;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #4b5563;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.navItem:hover {
+    background-color: #f0fdf4;
+    color: #16a34a;
+}
+
+.active {
+    background-color: #dcfce7;
+    color: #16a34a;
+}
+
+.footer {
+    padding: 1rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+.logoutBtn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    color: #ef4444;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.logoutBtn:hover {
+    background-color: #fef2f2;
+}
+
+.main {
+    flex: 1;
+    margin-left: 256px;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.mobileHeader {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4rem;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    z-index: 45;
+    padding: 0 1rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+    .mobileHeader {
+        display: flex;
+    }
+}

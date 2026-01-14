@@ -1,0 +1,103 @@
+:root {
+  /* Premium Field-Natural Palette */
+  --color-primary: #2d6a4f; /* Deep Forest Green */
+  --color-primary-light: #52b788;
+  --color-secondary: #d4a373; /* Earthy Sand */
+  --color-accent: #e9edc9; /* Light Grass */
+  --color-background: #f8f9fa; /* Crisp Off-White */
+  --color-surface: #ffffff;
+  --color-text: #1b4332; /* Dark Green Text */
+  --color-text-light: #74c69d;
+  --color-danger: #e63946;
+  --color-success: #2a9d8f;
+  
+  /* Shadows & Effects */
+  --shadow-sm: 0 2px 4px rgba(45, 106, 79, 0.05);
+  --shadow-md: 0 4px 12px rgba(45, 106, 79, 0.08);
+  --shadow-lg: 0 8px 24px rgba(45, 106, 79, 0.12);
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --backdrop-blur: 12px;
+
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+[data-theme='dark'] {
+  --color-primary: #52b788;
+  --color-background: #081c15; /* Deep Green Night */
+  --color-surface: #1b4332;
+  --color-text: #e9edc9;
+  --color-secondary: #b08968;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background);
+  color: var(--color-text);
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Utilities */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--backdrop-blur));
+  -webkit-backdrop-filter: blur(var(--backdrop-blur));
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-lg);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+  cursor: pointer;
+  border: none;
+  font-size: 0.95rem;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 4px 14px rgba(45, 106, 79, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(45, 106, 79, 0.4);
+}
+
+.btn-secondary {
+  background-color: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
