@@ -33,12 +33,53 @@ export async function getUsers() {
     }
 }
 
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'; // Direct client for admin
+
+// ... existing imports
+
 export async function addUser(email: string, role: string, name: string | null, password?: string) {
     const isOwner = await checkOwner();
     if (!isOwner) return { success: false, error: 'Acceso denegado' };
 
+    // 1. Validation
+    if (password && password.length < 6) {
+        return { success: false, error: 'La contraseña debe tener al menos 6 caracteres.' };
+    }
+
     try {
-        // Create user in DB so when they sign up, they have this role
+        // 2. Supabase Auth Sync
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (!serviceRoleKey) {
+            console.error("SUPABASE_SERVICE_ROLE_KEY is missing!");
+            return { success: false, error: 'Configuración del servidor incompleta (Falta Key).' };
+        }
+
+        const supabaseAdmin = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            serviceRoleKey,
+            { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+
+        const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+            email: email,
+            password: password || 'tempPass123!', // Provide a default if generic
+            email_confirm: true, // [UPDATED] Bypass Email Confirmation
+            user_metadata: { name: name }
+        });
+
+        if (authError) {
+            console.error("Supabase Auth Error:", authError);
+            if (authError.message.includes('already registered') || authError.status === 422) {
+                // User might already exist in Auth but not DB? Or just collision.
+                // We should probably proceed to check DB or return specific error.
+                // If they exist in Auth, we can try to link/create in DB anyway if missing.
+                console.log("User already in Auth, checking DB...");
+            } else {
+                return { success: false, error: `Error de Auth: ${authError.message}` };
+            }
+        }
+
+        // 3. Create/Update user in DB (Prisma)
         // Note: Password is stored for reference/legacy but NOT used for Supabase login unless synced
         const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
 
@@ -50,12 +91,19 @@ export async function addUser(email: string, role: string, name: string | null, 
                 name: name || null,
                 username: email.split('@')[0],
                 password: hashedPassword,
+                // store auth_id if needed? usually good practice but schema might not have it
             } as any,
         });
+
         revalidatePath('/settings');
         return { success: true };
-    } catch (error) {
-        return { success: false, error: 'Error al agregar usuario. Puede que ya exista.' };
+    } catch (error: any) {
+        // If Prisma fails (e.g. unique constraint on email in DB)
+        if (error.code === 'P2002') {
+            return { success: false, error: 'El usuario ya existe en la base de datos.' };
+        }
+        console.error("DB Error:", error);
+        return { success: false, error: 'Error al agregar usuario.' };
     }
 }
 
