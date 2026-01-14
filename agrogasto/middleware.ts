@@ -31,6 +31,19 @@ export async function middleware(request: NextRequest) {
         return NextResponse.redirect(url)
     }
 
+    // [NEW] RBAC: Protect /settings route
+    // Only OWNER can access settings
+    if (user && path.startsWith('/settings')) {
+        const role = user.user_metadata?.role;
+        // If role is missing in metadata (legacy user), we might want to fetch or default to safe (VIEWER).
+        // Safest is to block if not explicitly OWNER.
+        if (role !== 'OWNER') {
+            const url = request.nextUrl.clone()
+            url.pathname = '/'
+            return NextResponse.redirect(url)
+        }
+    }
+
     return supabaseResponse
 }
 

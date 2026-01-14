@@ -64,7 +64,7 @@ export async function addUser(email: string, role: string, name: string | null, 
             email: email,
             password: password || 'tempPass123!', // Provide a default if generic
             email_confirm: true, // [UPDATED] Bypass Email Confirmation
-            user_metadata: { name: name }
+            user_metadata: { name: name, role: role }
         });
 
         if (authError) {
@@ -125,6 +125,36 @@ export async function updateUserRole(email: string, newRole: string) {
     if (!isOwner) return { success: false, error: 'Acceso denegado' };
 
     try {
+        // 1. Sync with Supabase Auth
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (!serviceRoleKey) {
+            return { success: false, error: 'Falta SUPABASE_SERVICE_ROLE_KEY para sincronizar el rol.' };
+        }
+
+        const supabaseAdmin = createSupabaseClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            serviceRoleKey,
+            { auth: { autoRefreshToken: false, persistSession: false } }
+        );
+
+        const { data: { users: existingUsers } } = await supabaseAdmin.auth.admin.listUsers();
+        const existingUser = existingUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
+
+        if (existingUser) {
+            const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+                user_metadata: { ...existingUser.user_metadata, role: newRole }
+            });
+
+            if (updateError) {
+                console.error("Supabase Auth Role Sync Error:", updateError);
+                return { success: false, error: `Error sincronizando rol en Auth: ${updateError.message}` };
+            }
+        } else {
+            // Optional: Create user if missing? For now, just warn.
+            console.warn(`User ${email} not found in Supabase Auth during role update.`);
+        }
+
+        // 2. Update DB
         await prisma.user.update({
             where: { email },
             data: { role: newRole },
@@ -132,7 +162,7 @@ export async function updateUserRole(email: string, newRole: string) {
         revalidatePath('/settings');
         return { success: true };
     } catch (error) {
-        return { success: false, error: 'Error al actualizar rol' };
+        return { success: false, error: 'Error al actualizar rol en base de datos' };
     }
 }
 
