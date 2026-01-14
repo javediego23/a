@@ -144,6 +144,10 @@ export async function updateUser(email: string, data: { name?: string; password?
         // Sync with Supabase Auth (Password/Name)
         if (data.password || data.name) {
             const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (!serviceRoleKey && data.password) {
+                return { success: false, error: 'Falta SUPABASE_SERVICE_ROLE_KEY para actualizar contraseña.' };
+            }
+
             if (serviceRoleKey) {
                 const supabaseAdmin = createSupabaseClient(
                     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -151,14 +155,31 @@ export async function updateUser(email: string, data: { name?: string; password?
                     { auth: { autoRefreshToken: false, persistSession: false } }
                 );
 
+                // 1. Get User ID by list (small scale)
                 const { data: { users: existingUsers } } = await supabaseAdmin.auth.admin.listUsers();
                 const existingUser = existingUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
 
                 if (existingUser) {
-                    await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+                    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
                         password: data.password,
+                        email_confirm: true, // Force confirm
                         user_metadata: { name: data.name }
                     });
+                    if (updateError) {
+                        return { success: false, error: `Error Supabase Auth: ${updateError.message}` };
+                    }
+                } else if (data.password) {
+                    // Critical fallback: User not in Auth -> Create them
+                    console.log("[Auto-Fix] User not found in Auth during update. Creating now...");
+                    const { error: createError } = await supabaseAdmin.auth.admin.createUser({
+                        email: email,
+                        password: data.password,
+                        email_confirm: true,
+                        user_metadata: { name: data.name }
+                    });
+                    if (createError) {
+                        return { success: false, error: `Usuario no encontrado en Auth y falló creación: ${createError.message}` };
+                    }
                 }
             }
         }
@@ -175,8 +196,9 @@ export async function updateUser(email: string, data: { name?: string; password?
         });
         revalidatePath('/settings');
         return { success: true };
-    } catch (error) {
-        return { success: false, error: 'Error al actualizar usuario' };
+    } catch (error: any) {
+        console.error("Update error:", error);
+        return { success: false, error: 'Error al actualizar usuario: ' + (error.message || error) };
     }
 }
 
