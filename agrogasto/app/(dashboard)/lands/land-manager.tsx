@@ -20,7 +20,7 @@ type Land = {
 };
 
 export default function LandManager({ initialLands, userRole }: { initialLands: Land[], userRole: string | null | undefined }) {
-    const canEdit = userRole === 'OWNER' || userRole === 'EDITOR';
+    const canEdit = userRole === 'OWNER';
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [landType, setLandType] = useState('OWNED');

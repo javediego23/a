@@ -14,7 +14,7 @@ export async function getUserRole() {
 
 export async function canEdit() {
     const role = await getUserRole();
-    return role === 'OWNER' || role === 'EDITOR';
+    return role === 'OWNER';
 }
 
 export async function canManageUsers() {

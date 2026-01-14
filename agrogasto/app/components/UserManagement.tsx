@@ -139,7 +139,6 @@ export default function UserManagement() {
                                         disabled={user.role === 'OWNER'} // Prevent demoting other owners if simpler logic desired
                                     >
                                         <option value="VIEWER">ESPECTADOR</option>
-                                        <option value="EDITOR">EDITOR</option>
                                         <option value="OWNER">DUEÑO</option>
                                     </select>
                                 </td>
@@ -228,7 +227,6 @@ export default function UserManagement() {
                                     className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500 outline-none"
                                 >
                                     <option value="VIEWER">ESPECTADOR (Solo lectura)</option>
-                                    <option value="EDITOR">EDITOR (Gestión completa)</option>
                                     <option value="OWNER">DUEÑO (Administración total)</option>
                                 </select>
                             </div>

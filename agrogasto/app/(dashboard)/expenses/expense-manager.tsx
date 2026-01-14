@@ -32,7 +32,7 @@ type Expense = {
 };
 
 export default function GlobalExpenseManager({ initialExpenses, activeSeasons, userRole }: { initialExpenses: Expense[], activeSeasons: Season[], userRole: string | null | undefined }) {
-    const canEdit = userRole === 'OWNER' || userRole === 'EDITOR';
+    const canEdit = userRole === 'OWNER';
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');

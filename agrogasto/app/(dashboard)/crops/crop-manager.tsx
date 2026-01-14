@@ -13,7 +13,7 @@ type Crop = {
 };
 
 export default function CropManager({ initialCrops, lands, userRole }: { initialCrops: Crop[], lands: { id: number, name: string }[], userRole: string | null | undefined }) {
-    const canEdit = userRole === 'OWNER' || userRole === 'EDITOR';
+    const canEdit = userRole === 'OWNER';
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
 
