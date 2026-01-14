@@ -188,7 +188,7 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="name" tick={false} />
                                 <YAxis />
-                                <Tooltip formatter={(val: number) => `S/ ${val.toLocaleString('es-PE')}`} />
+                                <Tooltip formatter={(val: any) => `S/ ${Number(val || 0).toLocaleString('es-PE')}`} />
                                 <Bar dataKey="totalIncome" name="Ingresos" fill="#22c55e" radius={[4, 4, 0, 0]} />
                                 <Bar dataKey="totalExpenses" name="Gastos" fill="#ef4444" radius={[4, 4, 0, 0]} />
                                 <Bar dataKey="netProfit" name="Ganancia" fill="#3b82f6" radius={[4, 4, 0, 0]} />
