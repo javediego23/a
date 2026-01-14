@@ -5,7 +5,12 @@ import { prisma } from '@/lib/prisma';
 
 // ... existing imports
 
+import { createClient } from '@/utils/supabase/server';
+
 export async function generateFinancialAnalysis(customPrompt?: string) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Unauthorized' };
     // ... data fetching
 
     // If custom prompt is provided, use it directly with the data

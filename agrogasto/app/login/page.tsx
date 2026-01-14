@@ -2,15 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Lock, Sprout, ArrowRight } from 'lucide-react';
+import { User, Lock, Sprout, ArrowRight, Loader2 } from 'lucide-react';
 import styles from './login.module.css';
+import { createClient } from '@/utils/supabase/client';
 
 export default function LoginPage() {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    const supabase = createClient();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -18,17 +21,16 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const res = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password }),
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
             });
 
-            if (res.ok) {
-                router.push('/');
+            if (error) {
+                setError(error.message === 'Invalid login credentials' ? 'Credenciales inválidas' : error.message);
             } else {
-                const data = await res.json();
-                setError(data.message || 'Error al iniciar sesión');
+                router.push('/');
+                router.refresh();
             }
         } catch (err) {
             setError('Ocurrió un error inesperado');
@@ -42,7 +44,7 @@ export default function LoginPage() {
             <div className={styles.card}>
                 <div className={styles.header}>
                     <div className={styles.iconWrapper}>
-                        <Sprout size={40} color="#16a34a" /> {/* Green-600 */}
+                        <Sprout size={40} color="#16a34a" />
                     </div>
                     <h1 className={styles.title}>AgroGasto</h1>
                     <p className={styles.subtitle}>Gestión Agrícola Inteligente</p>
@@ -54,10 +56,10 @@ export default function LoginPage() {
                     <div className={styles.inputGroup}>
                         <User className={styles.inputIcon} size={20} />
                         <input
-                            type="text"
-                            placeholder="Usuario"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
+                            type="email"
+                            placeholder="Correo Electrónico"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
                             className={styles.input}
                             required
                         />
@@ -76,9 +78,11 @@ export default function LoginPage() {
                     </div>
 
                     <button type="submit" className={styles.button} disabled={loading}>
-                        {loading ? 'Ingresando...' : 'Iniciar Sesión'}
+                        {loading ? <Loader2 className="animate-spin" size={20} /> : 'Iniciar Sesión'}
                         {!loading && <ArrowRight size={18} className={styles.btnIcon} />}
                     </button>
+
+                    {/* Optional: Add Sign Up link if needed, or keep it strict */}
                 </form>
 
                 <div className={styles.footer}>

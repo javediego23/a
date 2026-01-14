@@ -1,35 +1,50 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { decrypt } from '@/lib/auth';
-import { cookies } from 'next/headers';
+import { type NextRequest } from 'next/server'
+import { updateSession } from '@/utils/supabase/middleware'
 
-// 1. Specify protected and public routes
-const protectedRoutes = ['/'];
-const publicRoutes = ['/login', '/api/auth/login'];
+export async function middleware(request: NextRequest) {
+    // Update session logic which handles refreshing tokens
+    const { supabaseResponse, user } = await updateSession(request)
 
-export default async function middleware(req: NextRequest) {
-    // 2. Check if the current route is protected or public
-    const path = req.nextUrl.pathname;
-    const isProtectedRoute = protectedRoutes.some((route) => path === route || (route !== '/' && path.startsWith(route)));
-    const isPublicRoute = publicRoutes.includes(path);
+    // Protected routes logic
+    const path = request.nextUrl.pathname
 
-    // 3. Decrypt the session from the cookie
-    const cookie = (await cookies()).get('session')?.value;
-    const session = cookie ? await decrypt(cookie).catch(() => null) : null;
+    // Define protected routes (adjust as needed)
+    // We assume everything under (dashboard) is protected which usually maps to root / or specific paths.
+    // Given the previous middleware protected '/', let's keep that logic.
+    // Actually, let's protect everything EXCEPT auth routes and public assets.
 
-    // 4. Redirect to /login if the user is not authenticated
-    if (isProtectedRoute && !session && path !== '/login') {
-        return NextResponse.redirect(new URL('/login', req.nextUrl));
+    const isLoginPage = path === '/login'
+    const isAuthRoute = path.startsWith('/auth') || path.startsWith('/api/auth')
+    const isPublicAsset = path.includes('.') // naive check for files
+
+    if (!user && !isLoginPage && !isAuthRoute && !isPublicAsset) {
+        // If trying to access root or other protected pages without user, redirect to login
+        const url = request.nextUrl.clone()
+        url.pathname = '/login'
+        return NextResponse.redirect(url)
     }
 
-    // 5. Redirect to /dashboard (or home) if the user is authenticated
-    if (isPublicRoute && session && !req.nextUrl.pathname.startsWith('/api')) {
-        return NextResponse.redirect(new URL('/', req.nextUrl));
+    if (user && isLoginPage) {
+        // If logged in and trying to access login, redirect to dashboard
+        const url = request.nextUrl.clone()
+        url.pathname = '/'
+        return NextResponse.redirect(url)
     }
 
-    return NextResponse.next();
+    return supabaseResponse
 }
 
-// Routes Middleware should not run on
+import { NextResponse } from 'next/server'
+
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
-};
+    matcher: [
+        /*
+         * Match all request paths except for the ones starting with:
+         * - _next/static (static files)
+         * - _next/image (image optimization files)
+         * - favicon.ico (favicon file)
+         * Feel free to modify this pattern to include more paths.
+         */
+        '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    ],
+}
