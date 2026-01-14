@@ -12,7 +12,8 @@ type Crop = {
     _count?: { seasons: number };
 };
 
-export default function CropManager({ initialCrops, lands }: { initialCrops: Crop[], lands: { id: number, name: string }[] }) {
+export default function CropManager({ initialCrops, lands, userRole }: { initialCrops: Crop[], lands: { id: number, name: string }[], userRole: string | null | undefined }) {
+    const canEdit = userRole === 'OWNER' || userRole === 'EDITOR';
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
 
@@ -39,10 +40,12 @@ export default function CropManager({ initialCrops, lands }: { initialCrops: Cro
     return (
         <>
             <div className={styles.actions}>
-                <button className={styles.addBtn} onClick={() => setIsAdding(!isAdding)}>
-                    <Plus size={20} />
-                    <span>{isAdding ? 'Cancelar' : 'Registrar Cultivo / Siembra'}</span>
-                </button>
+                {canEdit && (
+                    <button className={styles.addBtn} onClick={() => setIsAdding(!isAdding)}>
+                        <Plus size={20} />
+                        <span>{isAdding ? 'Cancelar' : 'Registrar Cultivo / Siembra'}</span>
+                    </button>
+                )}
                 <button onClick={handleExport} className={styles.addBtn} style={{ background: '#059669', marginLeft: '0.5rem' }}>
                     📊 Excel
                 </button>
@@ -109,10 +112,18 @@ export default function CropManager({ initialCrops, lands }: { initialCrops: Cro
                                     <Sprout size={24} color={color} />
                                 </div>
                                 <div className={styles.cardActions}>
-                                    <button onClick={() => setEditingId(crop.id)} className={styles.actionBtn}>
+                                    <button
+                                        onClick={() => setEditingId(crop.id)}
+                                        className={styles.actionBtn}
+                                        style={{ display: canEdit ? 'flex' : 'none' }}
+                                    >
                                         <Edit2 size={16} />
                                     </button>
-                                    <button onClick={() => handleDelete(crop.id)} className={styles.actionBtnDestructive}>
+                                    <button
+                                        onClick={() => handleDelete(crop.id)}
+                                        className={styles.actionBtnDestructive}
+                                        style={{ display: canEdit ? 'flex' : 'none' }}
+                                    >
                                         <Trash2 size={16} />
                                     </button>
                                 </div>

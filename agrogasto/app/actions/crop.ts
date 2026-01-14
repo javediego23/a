@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { canEdit } from '@/utils/permissions';
 
 export async function getCrops() {
     try {
@@ -21,6 +22,7 @@ export async function getCrops() {
 }
 
 export async function createCrop(formData: FormData) {
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
     const name = formData.get('name') as string;
 
     if (!name) return { success: false, error: 'El nombre es obligatorio' };
@@ -37,6 +39,7 @@ export async function createCrop(formData: FormData) {
 }
 
 export async function updateCrop(id: number, formData: FormData) {
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
     const name = formData.get('name') as string;
 
     try {
@@ -52,6 +55,7 @@ export async function updateCrop(id: number, formData: FormData) {
 }
 
 export async function deleteCrop(id: number) {
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
     try {
         // Check for dependencies
         const hasDependencies = await prisma.season.findFirst({
@@ -80,6 +84,7 @@ export async function deleteCrop(id: number) {
 }
 
 export async function createCropAndSeason(formData: FormData) {
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
     const name = formData.get('name') as string;
     const landId = formData.get('landId') ? parseInt(formData.get('landId') as string) : null;
     const startDateStr = formData.get('startDate') as string;

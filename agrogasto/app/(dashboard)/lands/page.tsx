@@ -1,9 +1,15 @@
 import { getLands } from '@/app/actions/land';
+import { getUserRole } from '@/utils/permissions';
 import LandManager from './land-manager';
 import styles from './lands.module.css';
 
 export default async function LandsPage() {
-    const { data: lands } = await getLands();
+    const [landsRes, userRole] = await Promise.all([
+        getLands(),
+        getUserRole()
+    ]);
+
+    const lands = landsRes.data || [];
 
     return (
         <div className={styles.container}>
@@ -12,7 +18,7 @@ export default async function LandsPage() {
                 <p className={styles.subtitle}>Gestione sus áreas de cultivo</p>
             </header>
 
-            <LandManager initialLands={lands || []} />
+            <LandManager initialLands={lands} userRole={userRole} />
         </div>
     );
 }

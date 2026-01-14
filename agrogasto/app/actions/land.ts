@@ -2,6 +2,7 @@
 
 import { prisma } from '@/lib/prisma';
 import { revalidatePath } from 'next/cache';
+import { canEdit } from '@/utils/permissions';
 
 export async function getLands() {
     try {
@@ -21,6 +22,8 @@ export async function getLands() {
 }
 
 export async function createLand(formData: FormData) {
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
+
     const name = formData.get('name') as string;
     const location = formData.get('location') as string;
     const type = formData.get('type') as string; // 'OWNED' | 'RENTED'
@@ -49,6 +52,8 @@ export async function createLand(formData: FormData) {
 }
 
 export async function updateLand(id: number, formData: FormData) {
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
+
     const name = formData.get('name') as string;
     const location = formData.get('location') as string;
     const type = formData.get('type') as string;
@@ -76,6 +81,7 @@ export async function updateLand(id: number, formData: FormData) {
 }
 
 export async function deleteLand(id: number) {
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
     try {
         // Check for dependencies (Expenses/Incomes in any season of this land)
         const hasDependencies = await prisma.season.findFirst({

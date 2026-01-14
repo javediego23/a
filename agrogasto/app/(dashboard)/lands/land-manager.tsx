@@ -19,7 +19,8 @@ type Land = {
     _count?: { seasons: number };
 };
 
-export default function LandManager({ initialLands }: { initialLands: Land[] }) {
+export default function LandManager({ initialLands, userRole }: { initialLands: Land[], userRole: string | null | undefined }) {
+    const canEdit = userRole === 'OWNER' || userRole === 'EDITOR';
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [landType, setLandType] = useState('OWNED');
@@ -55,10 +56,12 @@ export default function LandManager({ initialLands }: { initialLands: Land[] }) 
     return (
         <>
             <div className={styles.actions}>
-                <button className={styles.addBtn} onClick={() => { setIsAdding(!isAdding); setEditingId(null); setLandType('OWNED'); }}>
-                    <Plus size={20} />
-                    <span>{isAdding ? 'Cancelar' : 'Nuevo Terreno'}</span>
-                </button>
+                {canEdit && (
+                    <button className={styles.addBtn} onClick={() => { setIsAdding(!isAdding); setEditingId(null); setLandType('OWNED'); }}>
+                        <Plus size={20} />
+                        <span>{isAdding ? 'Cancelar' : 'Nuevo Terreno'}</span>
+                    </button>
+                )}
                 <button onClick={handleExport} className={styles.addBtn} style={{ background: '#059669', marginLeft: '0.5rem' }}>
                     📊 Excel
                 </button>
@@ -133,10 +136,18 @@ export default function LandManager({ initialLands }: { initialLands: Land[] }) 
                                     <Map size={24} color={color} />
                                 </div>
                                 <div className={styles.cardActions}>
-                                    <button onClick={() => { setEditingId(land.id); setLandType(land.type); }} className={styles.actionBtn}>
+                                    <button
+                                        onClick={() => { setEditingId(land.id); setLandType(land.type); }}
+                                        className={styles.actionBtn}
+                                        style={{ display: canEdit ? 'flex' : 'none' }}
+                                    >
                                         <Edit2 size={16} />
                                     </button>
-                                    <button onClick={() => handleDelete(land.id)} className={styles.actionBtnDestructive}>
+                                    <button
+                                        onClick={() => handleDelete(land.id)}
+                                        className={styles.actionBtnDestructive}
+                                        style={{ display: canEdit ? 'flex' : 'none' }}
+                                    >
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
