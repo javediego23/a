@@ -31,6 +31,20 @@ export default function DashboardLayoutClient({
     const pathname = usePathname();
 
     useEffect(() => {
+        const syncSession = async () => {
+            const { syncUserRole } = await import('@/app/actions/auth-sync');
+            const { createClient } = await import('@/utils/supabase/client');
+
+            const result = await syncUserRole();
+            if (result.success && result.updated) {
+                console.log('🔄 Role updated from DB. Refreshing session...');
+                const supabase = createClient();
+                await supabase.auth.refreshSession();
+                window.location.reload(); // Force reload to apply new claims to middleware
+            }
+        };
+
+        syncSession();
         getCurrentUserName().then(setUserName);
     }, []);
 

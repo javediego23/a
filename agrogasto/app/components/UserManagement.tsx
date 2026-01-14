@@ -66,6 +66,14 @@ export default function UserManagement() {
         }
 
         if (res.success) {
+            // Check if the role was updated for the current user (this logic assumes the current user's email is available)
+            // For simplicity, we'll refresh session if any user's role is updated via this modal.
+            // A more robust solution would compare the editingUser.email with the current session user's email.
+            if (editingUser && editingUser.role !== role) { // If an existing user was edited and their role changed
+                const { createClient } = await import('@/utils/supabase/client');
+                const supabase = createClient();
+                await supabase.auth.refreshSession();
+            }
             setIsModalOpen(false);
             setEditingUser(null);
             setEmail('');
