@@ -214,7 +214,11 @@ export default function UserManagement() {
                                         {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                                     </button>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-1">Se intentará registrar en Supabase (requiere Service Key) o guardar en BD.</p>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    {editingUser
+                                        ? "Dejar en blanco para mantener la contraseña actual."
+                                        : "Se registrará en Supabase (Login) y en la Base de Datos."}
+                                </p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">Rol Inicial</label>
