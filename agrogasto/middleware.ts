@@ -38,9 +38,12 @@ export async function middleware(request: NextRequest) {
         // If role is missing in metadata (legacy user), we might want to fetch or default to safe (VIEWER).
         // Safest is to block if not explicitly OWNER.
         if (role !== 'OWNER') {
+            console.log(`[Middleware] Blocking access to /settings. User: ${user.email}, Role Found: ${role}, Metadata:`, user.user_metadata);
             const url = request.nextUrl.clone()
             url.pathname = '/'
             return NextResponse.redirect(url)
+        } else {
+            console.log(`[Middleware] Allowing access to /settings. User: ${user.email}, Role: ${role}`);
         }
     }
 
