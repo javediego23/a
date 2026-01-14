@@ -10,7 +10,7 @@ dotenv.config({ path: path.join(__dirname, '..', '.env.local'), override: true }
 
 const prisma = new PrismaClient();
 
-const TARGET_EMAIL = 'javediego.4@gmail.com';
+const TARGET_EMAIL = 'javediego.4@hotmail.com';
 const TARGET_ROLE = 'OWNER';
 
 async function main() {
