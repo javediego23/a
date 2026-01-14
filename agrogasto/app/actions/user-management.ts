@@ -70,10 +70,23 @@ export async function addUser(email: string, role: string, name: string | null, 
         if (authError) {
             console.error("Supabase Auth Error:", authError);
             if (authError.message.includes('already registered') || authError.status === 422) {
-                // User might already exist in Auth but not DB? Or just collision.
-                // We should probably proceed to check DB or return specific error.
-                // If they exist in Auth, we can try to link/create in DB anyway if missing.
-                console.log("User already in Auth, checking DB...");
+                // User exists in Auth. We should update their password to ensure login works.
+                console.log("User already in Auth. Attempting to sync password...");
+                try {
+                    const { data: { users: existingUsers } } = await supabaseAdmin.auth.admin.listUsers();
+                    const existingUser = existingUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
+
+                    if (existingUser) {
+                        await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+                            password: password || 'tempPass123!',
+                            email_confirm: true,
+                            user_metadata: { name: name }
+                        });
+                        console.log("Synced Supabase Auth password for existing user.");
+                    }
+                } catch (syncErr) {
+                    console.error("Failed to sync exist user:", syncErr);
+                }
             } else {
                 return { success: false, error: `Error de Auth: ${authError.message}` };
             }
@@ -128,6 +141,28 @@ export async function updateUser(email: string, data: { name?: string; password?
     if (!isOwner) return { success: false, error: 'Acceso denegado' };
 
     try {
+        // Sync with Supabase Auth (Password/Name)
+        if (data.password || data.name) {
+            const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+            if (serviceRoleKey) {
+                const supabaseAdmin = createSupabaseClient(
+                    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                    serviceRoleKey,
+                    { auth: { autoRefreshToken: false, persistSession: false } }
+                );
+
+                const { data: { users: existingUsers } } = await supabaseAdmin.auth.admin.listUsers();
+                const existingUser = existingUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
+
+                if (existingUser) {
+                    await supabaseAdmin.auth.admin.updateUserById(existingUser.id, {
+                        password: data.password,
+                        user_metadata: { name: data.name }
+                    });
+                }
+            }
+        }
+
         const updateData: any = { ...data };
         if (data.password) {
             updateData.password = await bcrypt.hash(data.password, 10);
@@ -150,6 +185,21 @@ export async function deleteUser(email: string) {
     if (!isOwner) return { success: false, error: 'Acceso denegado' };
 
     try {
+        // Delete from Supabase Auth
+        const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (serviceRoleKey) {
+            const supabaseAdmin = createSupabaseClient(
+                process.env.NEXT_PUBLIC_SUPABASE_URL!,
+                serviceRoleKey,
+                { auth: { autoRefreshToken: false, persistSession: false } }
+            );
+            const { data: { users: existingUsers } } = await supabaseAdmin.auth.admin.listUsers();
+            const existingUser = existingUsers.find(u => u.email?.toLowerCase() === email.toLowerCase());
+            if (existingUser) {
+                await supabaseAdmin.auth.admin.deleteUser(existingUser.id);
+            }
+        }
+
         await prisma.user.delete({
             where: { email },
         });
