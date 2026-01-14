@@ -16,8 +16,8 @@ export default function TerrainsPage() {
         <div className="space-y-8">
             <div className="flex items-center justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-800">Mis Terrenos</h2>
-                    <p className="text-gray-500">Gestiona tus áreas de cultivo</p>
+                    <h2 className="text-2xl font-bold text-emerald-950">Mis Terrenos</h2>
+                    <p className="text-slate-600">Gestiona tus áreas de cultivo</p>
                 </div>
                 <Button>
                     + Agregar Terreno
@@ -36,8 +36,8 @@ export default function TerrainsPage() {
                             </button>
                         </div>
 
-                        <h3 className="text-lg font-bold text-gray-800 mb-1">{terrain.name}</h3>
-                        <p className="text-sm text-gray-500 mb-4">{terrain.location}</p>
+                        <h3 className="text-lg font-bold text-slate-900 mb-1">{terrain.name}</h3>
+                        <p className="text-sm text-slate-600 mb-4">{terrain.location}</p>
 
                         <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-2.5">
                             <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Tamaño</span>

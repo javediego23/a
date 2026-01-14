@@ -1,9 +1,10 @@
 'use client';
 
 import * as XLSX from 'xlsx';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { addExpense, deleteExpense, updateExpense } from '@/app/actions/transaction';
+import { getUnits } from '@/app/actions/units';
 import { Plus, Search, Filter, Calendar, Trash2, Edit2, X, Eye, EyeOff, Image as ImageIcon } from 'lucide-react';
 import styles from './expenses.module.css';
 import { format } from 'date-fns';
@@ -18,6 +19,7 @@ type Expense = {
     id: number;
     date: Date;
     amount: number;
+    quantity: number | null; // [NEW] optional due to legacy
     category: string;
     unit: string;
     note: string | null;
@@ -39,6 +41,13 @@ export default function GlobalExpenseManager({ initialExpenses, activeSeasons }:
     const [filterDateEnd, setFilterDateEnd] = useState('');
     const [selectedImage, setSelectedImage] = useState<string | null>(null); // For modal view
     const [previewImage, setPreviewImage] = useState<string | null>(null); // For form preview
+    const [units, setUnits] = useState<{ name: string, symbol: string }[]>([]);
+
+    useEffect(() => {
+        getUnits().then(res => {
+            if (res.success && res.data) setUnits(res.data);
+        });
+    }, []);
 
     const router = useRouter();
 
@@ -82,6 +91,7 @@ export default function GlobalExpenseManager({ initialExpenses, activeSeasons }:
             Terreno: e.season.land.name,
             Cultivo: e.season.crop.name,
             Categoria: e.category,
+            Cantidad: e.quantity || 1, // Default to 1 if null
             Unidad: e.unit,
             Nota: e.note,
             Monto: e.amount
@@ -214,34 +224,21 @@ export default function GlobalExpenseManager({ initialExpenses, activeSeasons }:
                         </div>
 
                         <div className={styles.formGroup}>
+                            <label>Cantidad (Opcional)</label>
+                            <input name="quantity" type="number" step="0.01" className={styles.input} placeholder="1" defaultValue={editingExpense?.quantity || ''} />
+                        </div>
+
+                        <div className={styles.formGroup}>
                             <label>Unidad</label>
                             <select
                                 name="unit"
                                 className={styles.input}
                                 required
-                                defaultValue={editingExpense?.unit || 'unidad'}
-                                onChange={(e) => {
-                                    if (e.target.value === 'custom') {
-                                        const custom = prompt('Ingrese la nueva unidad de medida:');
-                                        if (custom) {
-                                            const select = e.target as HTMLSelectElement;
-                                            const option = document.createElement('option');
-                                            option.value = custom;
-                                            option.text = custom;
-                                            select.add(option, select.options[select.options.length - 1]);
-                                            select.value = custom;
-                                        }
-                                    }
-                                }}
+                                defaultValue={editingExpense?.unit || 'un'}
                             >
-                                <option value="unidad">unidad</option>
-                                <option value="kg">kg</option>
-                                <option value="litro">litro</option>
-                                <option value="saco">saco</option>
-                                <option value="jornal">jornal</option>
-                                <option value="hora">hora</option>
-                                <option value="global">global</option>
-                                <option value="custom">Otro...</option>
+                                {units.map(u => (
+                                    <option key={u.symbol} value={u.symbol}>{u.name} ({u.symbol})</option>
+                                ))}
                             </select>
                         </div>
 
@@ -303,84 +300,89 @@ export default function GlobalExpenseManager({ initialExpenses, activeSeasons }:
                 </form>
             )}
 
-            <div className={styles.tableContainer}>
-                <table className={styles.table}>
+            <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm mt-8">
+                <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Cultivo / Terreno</th>
-                            <th>Categoría</th>
-                            <th>Detalle</th>
-                            <th>Monto</th>
-                            <th style={{ width: '80px' }}></th>
+                        <tr className="bg-slate-50/50 border-b border-slate-200">
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fecha</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Cultivo - Terreno</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Categoría</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Cantidad</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Detalle</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Monto</th>
+                            <th className="px-6 py-4 w-[120px]"></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100">
                         {filteredExpenses.map((expense) => (
-                            <tr key={expense.id}>
-                                <td>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <Calendar size={14} color="#6b7280" />
-                                        {format(new Date(expense.date), 'dd/MM/yyyy')}
+                            <tr key={expense.id} className="hover:bg-slate-50/80 transition-colors group">
+                                <td className="px-6 py-5 text-sm text-slate-600 font-medium whitespace-nowrap">
+                                    {format(new Date(expense.date), 'dd/MM/yyyy')}
+                                </td>
+                                <td className="px-6 py-5">
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-slate-800 text-sm">{expense.season.crop.name}</span>
+                                        <span className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                            {expense.season.land.name}
+                                        </span>
                                     </div>
                                 </td>
-                                <td>
-                                    <div className={styles.landCrop}>
-                                        <span className={styles.landName}>{expense.season.land.name}</span>
-                                        <span className={styles.cropName}>{expense.season.crop.name}</span>
+                                <td className="px-6 py-5">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                                        {expense.category}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-5 text-sm font-semibold text-slate-700">
+                                    {expense.quantity ? expense.quantity : '-'}
+                                    <span className="text-xs font-normal text-slate-500 ml-1">{expense.unit}</span>
+                                </td>
+                                <td className="px-6 py-5 text-sm text-slate-500 max-w-[250px] truncate">
+                                    <div className="flex items-center gap-2">
+                                        <span>{expense.note || '-'}</span>
+                                        {/* Removed unit chip since it's now in Quantity column */}
                                     </div>
                                 </td>
-                                <td>
-                                    <span className={styles.categoryTag}>{expense.category}</span>
+                                <td className="px-6 py-5 text-right whitespace-nowrap">
+                                    <span className="font-bold text-slate-900 text-base">
+                                        S/ {expense.amount.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                                    </span>
                                 </td>
-                                <td>
-                                    <div style={{ fontSize: '0.85rem' }}>
-                                        {expense.note}
-                                        {expense.unit && expense.unit !== 'unidad' && <span style={{ color: '#6b7280', marginLeft: '4px' }}>({expense.unit})</span>}
-                                    </div>
-                                </td>
-                                <td className={styles.amount}>S/ {expense.amount.toLocaleString('es-PE')}</td>
-                                <td>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <td className="px-6 py-5 text-right">
+                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
                                         {expense.imageUrl ? (
                                             <button
                                                 onClick={() => setSelectedImage(expense.imageUrl)}
-                                                className={styles.iconBtn}
-                                                style={{ color: '#0ea5e9' }}
+                                                className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
                                                 title="Ver Imagen"
                                             >
                                                 <Eye size={16} />
                                             </button>
                                         ) : (
-                                            <div className={styles.iconDisabled} title="Sin Imagen">
-                                                <EyeOff size={16} color="#9ca3af" />
+                                            <div className="p-1.5 text-slate-200 cursor-not-allowed">
+                                                <EyeOff size={16} />
                                             </div>
                                         )}
                                         <button
                                             onClick={() => {
-                                                // Find season ID based on land/crop name match or other logic if not direct
-                                                // For now, simpler to just open match
-                                                // The activeSeasons prop has standard seasons.
-                                                // We need to match the expense.season to one of activeSeasons to validly select it.
                                                 const seasonMatch = activeSeasons.find(s =>
                                                     s.land.name === expense.season.land.name &&
                                                     s.crop.name === expense.season.crop.name
                                                 );
                                                 if (seasonMatch) setSelectedSeasonId(seasonMatch.id.toString());
-
                                                 setPreviewImage(expense.imageUrl);
                                                 setEditingId(expense.id);
-                                                setIsAdding(true); /* Open form */
+                                                setIsAdding(true);
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                             }}
-                                            className={styles.iconBtn}
+                                            className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
                                             title="Editar"
                                         >
                                             <Edit2 size={16} />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(expense.id)}
-                                            className={styles.iconBtnDestructive}
+                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
                                             title="Eliminar"
                                         >
                                             <Trash2 size={16} />
@@ -391,8 +393,8 @@ export default function GlobalExpenseManager({ initialExpenses, activeSeasons }:
                         ))}
                         {filteredExpenses.length === 0 && (
                             <tr>
-                                <td colSpan={6} className={styles.empty}>
-                                    {initialExpenses.length === 0 ? 'No hay gastos registrados.' : 'No se encontraron gastos con estos filtros.'}
+                                <td colSpan={6} className="p-12 text-center text-slate-400 italic bg-slate-50/30">
+                                    {initialExpenses.length === 0 ? 'No hay gastos registrados. Comienza agregando uno.' : 'No se encontraron gastos con estos filtros.'}
                                 </td>
                             </tr>
                         )}

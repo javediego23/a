@@ -6,6 +6,29 @@ import { prisma } from '@/lib/prisma';
 // ... existing imports
 
 import { createClient } from '@/utils/supabase/server';
+import { MODEL_NAME } from '@/lib/gemini';
+
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 2000;
+
+async function generateContentWithRetry(model: any, prompt: string) {
+    let retries = 0;
+    while (retries < MAX_RETRIES) {
+        try {
+            return await model.generateContent(prompt);
+        } catch (error: any) {
+            if (error.message?.includes('429') || error.status === 429) {
+                retries++;
+                const delay = RETRY_DELAY * Math.pow(2, retries - 1);
+                console.log(`⚠️ Rate limit hit. Retrying in ${delay}ms... (Attempt ${retries}/${MAX_RETRIES})`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+            } else {
+                throw error;
+            }
+        }
+    }
+    throw new Error(`Error: Servidor IA ocupado (429). Intente en unos segundos.`);
+}
 
 export async function generateFinancialAnalysis(customPrompt?: string) {
     const supabase = await createClient();
@@ -32,8 +55,8 @@ export async function generateFinancialAnalysis(customPrompt?: string) {
                 };
             }
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-            const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-            const result = await model.generateContent(customPrompt + "\nResponde en español, tono profesional experto.");
+            const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+            const result = await generateContentWithRetry(model, customPrompt + "\nResponde en español, tono profesional experto.");
             const response = await result.response;
             return { success: true, analysis: response.text() };
         }
@@ -104,15 +127,15 @@ export async function generateFinancialAnalysis(customPrompt?: string) {
         }
 
         const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const result = await model.generateContent(context);
+        const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+        const result = await generateContentWithRetry(model, context);
         const response = await result.response;
         const text = response.text();
 
         return { success: true, analysis: text };
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("AI Analysis Error:", error);
-        return { success: false, error: "Error generando análisis con IA." };
+        return { success: false, error: error.message || "Error generando análisis con IA." };
     }
 }

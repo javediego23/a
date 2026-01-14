@@ -8,11 +8,11 @@ export default async function ReportsPage() {
     return (
         <div className="p-6 max-w-7xl mx-auto">
             <header className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                    <FileText className="text-emerald-600" size={32} />
+                <h1 className="text-3xl font-bold text-emerald-950 flex items-center gap-3">
+                    <FileText className="text-emerald-700" size={32} />
                     Análisis Financiero & Reportes
                 </h1>
-                <p className="text-gray-500 mt-2">
+                <p className="text-slate-600 mt-2">
                     Genera explicaciones detalladas para cada gráfica y descarga el reporte completo.
                 </p>
             </header>

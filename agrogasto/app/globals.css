@@ -1,23 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
-  /* Premium Field-Natural Palette */
-  --color-primary: #2d6a4f; /* Deep Forest Green */
-  --color-primary-light: #52b788;
-  --color-secondary: #d4a373; /* Earthy Sand */
-  --color-accent: #e9edc9; /* Light Grass */
-  --color-background: #f8f9fa; /* Crisp Off-White */
-  --color-surface: #ffffff;
-  --color-text: #1b4332; /* Dark Green Text */
-  --color-text-light: #74c69d;
-  --color-danger: #e63946;
-  --color-success: #2a9d8f;
-  
+  /* Premium Field-Natural Palette (Light Mode High Contrast) */
+  --color-primary: #10b981;
+  /* Emerald 500 */
+  --color-primary-light: #34d399;
+
+  --color-background: #ffffff;
+  /* Pure White */
+  --color-surface: #f8fafc;
+  /* Slate 50 */
+
+  --color-text: #0f172a;
+  /* Slate 900 for body text */
+  --color-text-light: #022c22;
+  /* Emerald 950 for headers (User Requested) */
+  --color-text-dim: #334155;
+  /* Slate 700 for subtitles */
+
+  --color-secondary: #b08968;
+  /* Earthy Brown */
+  --color-accent: #059669;
+  /* Darker Green for accents on light bg */
+
+  --color-danger: #dc2626;
+  /* Darker Red */
+  --color-success: #16a34a;
+  /* Darker Green */
+  --color-info: #2563eb;
+  /* Blue */
+
   /* Shadows & Effects */
-  --shadow-sm: 0 2px 4px rgba(45, 106, 79, 0.05);
-  --shadow-md: 0 4px 12px rgba(45, 106, 79, 0.08);
-  --shadow-lg: 0 8px 24px rgba(45, 106, 79, 0.12);
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.5);
-  --backdrop-blur: 12px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --backdrop-blur: 8px;
 
   /* Typography */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -25,13 +46,7 @@
   --radius-lg: 20px;
 }
 
-[data-theme='dark'] {
-  --color-primary: #52b788;
-  --color-background: #081c15; /* Deep Green Night */
-  --color-surface: #1b4332;
-  --color-text: #e9edc9;
-  --color-secondary: #b08968;
-}
+/* Removed light mode & data-theme selector */
 
 * {
   box-sizing: border-box;
@@ -52,7 +67,12 @@ a {
   text-decoration: none;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 700;
   letter-spacing: -0.02em;
 }

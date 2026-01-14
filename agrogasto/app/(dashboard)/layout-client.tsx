@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -13,8 +13,10 @@ import {
     LogOut,
     Menu,
     X,
-    FileText
+    FileText,
+    Settings
 } from 'lucide-react';
+import { getCurrentUserName } from '@/app/actions/user-info';
 import styles from './dashboard.module.css';
 
 export default function DashboardLayoutClient({
@@ -25,7 +27,12 @@ export default function DashboardLayoutClient({
     logoutAction: () => Promise<void>;
 }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [userName, setUserName] = useState<string | null>(null);
     const pathname = usePathname();
+
+    useEffect(() => {
+        getCurrentUserName().then(setUserName);
+    }, []);
 
     const isActive = (path: string) => pathname === path ? styles.active : '';
 
@@ -52,6 +59,13 @@ export default function DashboardLayoutClient({
                 <div className={styles.logo}>
                     <Sprout size={32} color="#22c55e" />
                     <span className={styles.brand}>AgroGasto</span>
+                </div>
+
+                <div className="mb-6 px-4 py-2 border-b border-gray-100">
+                    <span className="text-sm font-medium text-emerald-800">Hola,</span>
+                    <h2 className="text-base font-bold text-slate-900 truncate">
+                        {userName || '...'}
+                    </h2>
                 </div>
 
                 <nav className={styles.nav}>
@@ -82,6 +96,10 @@ export default function DashboardLayoutClient({
                     <Link href="/reports" className={`${styles.navItem} ${isActive('/reports')}`} onClick={() => setIsSidebarOpen(false)}>
                         <FileText size={20} />
                         <span>Análisis Financiero</span>
+                    </Link>
+                    <Link href="/settings" className={`${styles.navItem} ${isActive('/settings')}`} onClick={() => setIsSidebarOpen(false)}>
+                        <Settings size={20} />
+                        <span>Configuraciones</span>
                     </Link>
                 </nav>
 

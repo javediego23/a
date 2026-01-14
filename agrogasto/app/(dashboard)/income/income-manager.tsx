@@ -1,9 +1,10 @@
 'use client';
 
 import * as XLSX from 'xlsx';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { addIncome, deleteIncome, updateIncome } from '@/app/actions/transaction';
+import { getUnits } from '@/app/actions/units';
 import { Plus, Calendar, DollarSign, Trash2, Edit2, Search, X } from 'lucide-react';
 import styles from './income.module.css';
 import { format } from 'date-fns';
@@ -36,6 +37,13 @@ export default function GlobalIncomeManager({ initialIncomes, activeSeasons }: {
     const [filterCategory, setFilterCategory] = useState('');
     const [filterDateStart, setFilterDateStart] = useState('');
     const [filterDateEnd, setFilterDateEnd] = useState('');
+    const [units, setUnits] = useState<{ name: string, symbol: string }[]>([]);
+
+    useEffect(() => {
+        getUnits().then(res => {
+            if (res.success && res.data) setUnits(res.data);
+        });
+    }, []);
 
     const router = useRouter();
 
@@ -201,27 +209,10 @@ export default function GlobalIncomeManager({ initialIncomes, activeSeasons }: {
                                 name="unit"
                                 className={styles.input}
                                 defaultValue={editingIncome?.unit || 'kg'}
-                                onChange={(e) => {
-                                    if (e.target.value === 'custom') {
-                                        const custom = prompt('Ingrese la nueva unidad de medida:');
-                                        if (custom) {
-                                            const select = e.target as HTMLSelectElement;
-                                            const option = document.createElement('option');
-                                            option.value = custom;
-                                            option.text = custom;
-                                            select.add(option, select.options[select.options.length - 1]);
-                                            select.value = custom;
-                                        }
-                                    }
-                                }}
                             >
-                                <option value="kg">kg</option>
-                                <option value="quintal">quintal</option>
-                                <option value="ton">ton</option>
-                                <option value="unidad">unidad</option>
-                                <option value="jaba">jaba</option>
-                                <option value="malla">malla</option>
-                                <option value="custom">Otro...</option>
+                                {units.map(u => (
+                                    <option key={u.symbol} value={u.symbol}>{u.name} ({u.symbol})</option>
+                                ))}
                             </select>
                         </div>
                         <div className={styles.formGroup}>
@@ -234,42 +225,52 @@ export default function GlobalIncomeManager({ initialIncomes, activeSeasons }: {
                 </form>
             )}
 
-            <div className={styles.tableContainer}>
-                <table className={styles.table}>
+            <div className="bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-sm mt-8">
+                <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Cultivo / Terreno</th>
-                            <th>Categoría</th>
-                            <th>Detalle</th>
-                            <th>Total</th>
-                            <th style={{ width: '80px' }}></th>
+                        <tr className="bg-slate-50/50 border-b border-slate-200">
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Fecha</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Cultivo - Terreno</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Categoría</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Detalle</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Monto</th>
+                            <th className="px-6 py-4 w-[120px]"></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100">
                         {filteredIncomes.map((income) => (
-                            <tr key={income.id}>
-                                <td>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <Calendar size={14} color="#6b7280" />
-                                        {format(new Date(income.date), 'dd/MM/yyyy')}
+                            <tr key={income.id} className="hover:bg-slate-50/80 transition-colors group">
+                                <td className="px-6 py-5 text-sm text-slate-600 font-medium whitespace-nowrap">
+                                    {format(new Date(income.date), 'dd/MM/yyyy')}
+                                </td>
+                                <td className="px-6 py-5">
+                                    <div className="flex flex-col">
+                                        <span className="font-bold text-slate-800 text-sm">{income.season.crop.name}</span>
+                                        <span className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                            {income.season.land.name}
+                                        </span>
                                     </div>
                                 </td>
-                                <td>
-                                    <div className={styles.landCrop}>
-                                        <span className={styles.landName}>{income.season.land.name}</span>
-                                        <span className={styles.cropName}>{income.season.crop.name}</span>
+                                <td className="px-6 py-5">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                        {income.category || 'Venta'}
+                                    </span>
+                                </td>
+                                <td className="px-6 py-5 text-sm text-slate-600 max-w-[250px] truncate">
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="font-semibold text-slate-800">{income.quantity} {income.unit}</span>
+                                        <span className="text-xs text-slate-400">x</span>
+                                        <span className="text-xs text-slate-500">S/ {income.unitPrice}</span>
                                     </div>
                                 </td>
-                                <td>
-                                    <span className={styles.categoryTag}>{income.category || 'Venta'}</span>
+                                <td className="px-6 py-5 text-right whitespace-nowrap">
+                                    <span className="font-bold text-emerald-600 text-base">
+                                        + S/ {income.totalPrice.toLocaleString('es-PE', { minimumFractionDigits: 2 })}
+                                    </span>
                                 </td>
-                                <td>
-                                    {income.quantity} {income.unit} a S/ {income.unitPrice}
-                                </td>
-                                <td className={styles.amount}>S/ {income.totalPrice.toLocaleString('es-PE')}</td>
-                                <td>
-                                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <td className="px-6 py-5 text-right">
+                                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
                                         <button
                                             onClick={() => {
                                                 const seasonMatch = activeSeasons.find(s =>
@@ -277,19 +278,18 @@ export default function GlobalIncomeManager({ initialIncomes, activeSeasons }: {
                                                     s.crop.name === income.season.crop.name
                                                 );
                                                 if (seasonMatch) setSelectedSeasonId(seasonMatch.id.toString());
-
                                                 setEditingId(income.id);
                                                 setIsAdding(true);
                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                                             }}
-                                            className={styles.iconBtn}
+                                            className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
                                             title="Editar"
                                         >
                                             <Edit2 size={16} />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(income.id)}
-                                            className={styles.iconBtnDestructive}
+                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
                                             title="Eliminar"
                                         >
                                             <Trash2 size={16} />
@@ -300,8 +300,8 @@ export default function GlobalIncomeManager({ initialIncomes, activeSeasons }: {
                         ))}
                         {filteredIncomes.length === 0 && (
                             <tr>
-                                <td colSpan={6} className={styles.empty}>
-                                    {initialIncomes.length === 0 ? 'No hay ingresos registrados.' : 'No se encontraron ingresos con estos filtros.'}
+                                <td colSpan={6} className="p-12 text-center text-slate-400 italic bg-slate-50/30">
+                                    {initialIncomes.length === 0 ? 'No hay ingresos registrados. Comienza agregando uno.' : 'No se encontraron ingresos con estos filtros.'}
                                 </td>
                             </tr>
                         )}

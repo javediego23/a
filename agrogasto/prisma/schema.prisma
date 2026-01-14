@@ -14,6 +14,7 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   username  String?  @unique
+  name      String?  // [NEW] Display name
   password  String?  // Optional, legacy or if not using Supabase Auth for some reason
   role      String   @default("VIEWER") // "OWNER", "EDITOR", "VIEWER"
   createdAt DateTime @default(now())
@@ -28,6 +29,8 @@ model Land {
   rentStartDate DateTime?
   rentEndDate   DateTime?
   isActive      Boolean   @default(true)
+  area          Float     @default(0) // [NEW] Area size
+  areaUnit      String    @default("ha") // [NEW] Unit (ha, m2)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   seasons       Season[]
@@ -63,6 +66,7 @@ model Expense {
   seasonId    Int
   date        DateTime
   amount      Float
+  quantity    Float?   @default(1) // [NEW] Added for tracking quantity (e.g., 2 scy)
   category    String   // "Riego", "Fertilizante", "Mano de Obra", etc.
   unit        String   // "kg", "litros", "horas"
   note        String?
@@ -89,4 +93,47 @@ model Income {
   updatedAt   DateTime @updatedAt
   
   season      Season   @relation(fields: [seasonId], references: [id])
+}
+
+enum UnitUsage {
+  EXPENSE
+  INCOME
+  BOTH
+}
+
+model Unit {
+  id        Int       @id @default(autoincrement())
+  name      String    // e.g. "Kilogramos"
+  symbol    String    @unique // e.g. "kg"
+  usage     UnitUsage @default(BOTH) // [NEW]
+  createdAt DateTime  @default(now())
+}
+
+// [NEW] Model to store AI Crop Predictions
+model SavedPrediction {
+  id                  Int      @id @default(autoincrement())
+  inputLocation       String
+  inputDate           DateTime
+  inputArea           Float
+  inputAreaUnit       String   @default("ha")
+  
+  cropName            String
+  confidence          Int      // 0-100
+  estimatedProduction String   // Text description e.g. "40-50 tons"
+  marketDemand        String?  // Text
+  
+  justification       String   // Long text
+  risks               String   // Long text
+  
+  // [NEW] Financial data
+  currentPrice        String?
+  priceAtHarvest      String?  // [NEW]
+  profitability       String?
+  priceTrend          String?
+
+  investmentLevel     String?  // "Alta", "Media", "Baja"
+  timeToHarvest       String?  // "4 months"
+  maintenance         String?  // "Difícil"
+  
+  createdAt           DateTime @default(now())
 }

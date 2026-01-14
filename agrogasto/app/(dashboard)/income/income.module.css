@@ -10,11 +10,11 @@
 .title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #111827;
+  color: #022c22;
 }
 
 .subtitle {
-  color: #6b7280;
+  color: #475569;
   margin-top: 0.5rem;
 }
 
@@ -28,7 +28,8 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #16a34a; /* Green-600 */
+  background: #16a34a;
+  /* Green-600 */
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 12px;
@@ -94,7 +95,7 @@
 .tableContainer {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 

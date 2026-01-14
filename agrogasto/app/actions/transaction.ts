@@ -37,6 +37,7 @@ export async function addExpense(formData: FormData) {
     const seasonId = parseInt(formData.get('seasonId') as string);
     const date = new Date(formData.get('date') as string);
     const amount = parseFloat(formData.get('amount') as string);
+    const quantity = formData.get('quantity') ? parseFloat(formData.get('quantity') as string) : null; // [NEW]
     const category = formData.get('category') as string;
     const unit = formData.get('unit') as string;
     const note = formData.get('note') as string;
@@ -44,12 +45,10 @@ export async function addExpense(formData: FormData) {
     const imageUrl = formData.get('imageUrl') as string;
 
     try {
-        console.log('Adding Expense:', { seasonId, date, amount, category, hasImage: !!imageUrl });
+        console.log('Adding Expense:', { seasonId, date, amount, quantity, category, hasImage: !!imageUrl });
         const result = await prisma.expense.create({
-            data: { seasonId, date, amount, category, unit, note, imageUrl },
+            data: { seasonId, date, amount, quantity, category, unit, note, imageUrl },
         });
-        console.log('Expense Created:', result.id);
-
         revalidatePath('/lands', 'layout');
         revalidatePath('/expenses');
         revalidatePath('/');
@@ -57,6 +56,34 @@ export async function addExpense(formData: FormData) {
     } catch (error) {
         console.error('Error adding expense:', error);
         return { success: false, error: 'Error al registrar gasto' };
+    }
+}
+
+export async function updateExpense(id: number, formData: FormData) {
+    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
+    const seasonId = parseInt(formData.get('seasonId') as string);
+    const date = new Date(formData.get('date') as string);
+    const amount = parseFloat(formData.get('amount') as string);
+    const quantity = formData.get('quantity') ? parseFloat(formData.get('quantity') as string) : null;
+    const category = formData.get('category') as string;
+    const unit = formData.get('unit') as string;
+    const note = formData.get('note') as string;
+
+    const imageUrl = formData.get('imageUrl') as string;
+
+    try {
+        await prisma.expense.update({
+            where: { id },
+            data: { seasonId, date, amount, quantity, category, unit, note, imageUrl },
+        });
+
+        revalidatePath('/lands', 'layout');
+        revalidatePath('/expenses');
+        revalidatePath('/');
+        return { success: true };
+    } catch (error) {
+        console.error('Error updating expense:', error);
+        return { success: false, error: 'Error al actualizar gasto' };
     }
 }
 
@@ -112,32 +139,7 @@ export async function deleteIncome(id: number) {
     }
 }
 
-// ... existing code ...
-export async function updateExpense(id: number, formData: FormData) {
-    if (!await canEdit()) return { success: false, error: 'Acceso denegado' };
-    const seasonId = parseInt(formData.get('seasonId') as string);
-    const date = new Date(formData.get('date') as string);
-    const amount = parseFloat(formData.get('amount') as string);
-    const category = formData.get('category') as string;
-    const unit = formData.get('unit') as string;
-    const note = formData.get('note') as string;
 
-    const imageUrl = formData.get('imageUrl') as string;
-
-    try {
-        await prisma.expense.update({
-            where: { id },
-            data: { seasonId, date, amount, category, unit, note, imageUrl },
-        });
-        revalidatePath('/lands', 'layout');
-        revalidatePath('/expenses');
-        revalidatePath('/');
-        return { success: true };
-    } catch (error) {
-        console.error('Error updating expense:', error);
-        return { success: false, error: 'Error al actualizar gasto' };
-    }
-}
 
 export async function updateIncome(id: number, formData: FormData) {
     if (!await canEdit()) return { success: false, error: 'Acceso denegado' };

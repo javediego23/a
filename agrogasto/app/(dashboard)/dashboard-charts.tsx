@@ -52,15 +52,19 @@ export default function DashboardCharts({ data }: { data: DashboardData }) {
             </div>
             <div className={styles.chartsGrid}>
                 <div className={styles.chartCard}>
-                    <h3>Gastos vs Ingresos por Terreno</h3>
+                    <h3 className="text-lg font-bold text-emerald-950 mb-4">Gastos vs Ingresos por Terreno</h3>
                     <div style={{ width: '100%', height: 300 }}>
                         <ResponsiveContainer>
                             <BarChart data={data.landStats}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip formatter={(value: any) => `S/ ${value?.toLocaleString('es-PE')}`} />
-                                <Legend />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                <XAxis dataKey="name" tick={{ fill: '#334155' }} stroke="#cbd5e1" />
+                                <YAxis tick={{ fill: '#334155' }} stroke="#cbd5e1" />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                    itemStyle={{ color: '#1e293b' }}
+                                    formatter={(value: any) => `S/ ${value?.toLocaleString('es-PE')}`}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '20px' }} />
                                 <Bar dataKey="expenses" name="Gastos" fill="#ef4444" radius={[4, 4, 0, 0]} />
                                 <Bar dataKey="income" name="Ingresos" fill="#22c55e" radius={[4, 4, 0, 0]} />
                             </BarChart>
@@ -69,15 +73,19 @@ export default function DashboardCharts({ data }: { data: DashboardData }) {
                 </div>
 
                 <div className={styles.chartCard}>
-                    <h3>Rentabilidad por Terreno</h3>
+                    <h3 className="text-lg font-bold text-emerald-950 mb-4">Rentabilidad por Terreno</h3>
                     <div style={{ width: '100%', height: 300 }}>
                         <ResponsiveContainer>
                             <BarChart data={data.landStats}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip formatter={(value: any) => `S/ ${value?.toLocaleString('es-PE')}`} />
-                                <Legend />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                                <XAxis dataKey="name" tick={{ fill: '#334155' }} stroke="#cbd5e1" />
+                                <YAxis tick={{ fill: '#334155' }} stroke="#cbd5e1" />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                                    itemStyle={{ color: '#1e293b' }}
+                                    formatter={(value: any) => `S/ ${value?.toLocaleString('es-PE')}`}
+                                />
+                                <Legend wrapperStyle={{ paddingTop: '20px' }} />
                                 <Bar dataKey="profit" name="Ganancia Neta" radius={[4, 4, 0, 0]}>
                                     {data.landStats.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.profit >= 0 ? '#16a34a' : '#dc2626'} />

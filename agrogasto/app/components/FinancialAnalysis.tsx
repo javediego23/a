@@ -31,9 +31,13 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
             const result = await generateFinancialAnalysis(context);
             if (result.success && result.analysis) {
                 setAnalysis(prev => ({ ...prev, general: result.analysis }));
+            } else {
+                setAnalysis(prev => ({ ...prev, general: "Error: " + (result.error || "No se pudo generar el análisis.") }));
+                alert(result.error || "Error al generar análisis general.");
             }
         } catch (error) {
             console.error(error);
+            setAnalysis(prev => ({ ...prev, general: "Error de conexión." }));
         } finally {
             setLoading(prev => ({ ...prev, general: false }));
         }
@@ -47,9 +51,13 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
             const result = await generateFinancialAnalysis(context);
             if (result.success && result.analysis) {
                 setAnalysis(prev => ({ ...prev, crops: result.analysis }));
+            } else {
+                setAnalysis(prev => ({ ...prev, crops: "Error: " + (result.error || "No se pudo generar el análisis.") }));
+                alert(result.error || "Error al generar análisis por cultivo.");
             }
         } catch (error) {
             console.error(error);
+            setAnalysis(prev => ({ ...prev, crops: "Error de conexión." }));
         } finally {
             setLoading(prev => ({ ...prev, crops: false }));
         }
@@ -159,10 +167,10 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
     return (
         <div className="space-y-8">
             {/* Header / PDF Export Area */}
-            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-gray-100 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-center bg-white p-6 rounded-xl shadow-sm border border-slate-200 gap-4">
                 <div>
-                    <h2 className="text-xl font-bold text-gray-800">Panel de Resultados</h2>
-                    <p className="text-sm text-gray-500 max-w-lg">
+                    <h2 className="text-xl font-bold text-slate-900">Panel de Resultados</h2>
+                    <p className="text-sm text-slate-600 max-w-lg">
                         Visualiza el estado de tu negocio y genera reportes inteligentes.
                         Genera los análisis de IA abajo para incluirlos en el PDF.
                     </p>
@@ -180,14 +188,14 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
             {/* Visual Charts Section (Purely Visual) */}
             <div className="grid md:grid-cols-2 gap-6">
                 {/* Chart 1: Global Balance */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4">Balance General</h3>
-                    <div ref={chartGlobalRef} className="bg-white">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4">Resumen de Utilidades</h3>
+                    <div ref={chartGlobalRef} className="bg-white dark:bg-transparent">
                         <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={[data.globalStats]}>
+                            <BarChart data={[{ ...data.globalStats, name: 'Actual' }]}>
                                 <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="name" tick={false} />
-                                <YAxis />
+                                <XAxis dataKey="name" tick={{ fill: '#334155', fontSize: 12 }} stroke="#334155" tickLine={false} axisLine={{ stroke: '#334155' }} />
+                                <YAxis tick={{ fill: '#334155', fontSize: 12 }} stroke="#334155" tickLine={false} axisLine={{ stroke: '#334155' }} />
                                 <Tooltip formatter={(val: any) => `S/ ${Number(val || 0).toLocaleString('es-PE')}`} />
                                 <Bar dataKey="totalIncome" name="Ingresos" fill="#22c55e" radius={[4, 4, 0, 0]} />
                                 <Bar dataKey="totalExpenses" name="Gastos" fill="#ef4444" radius={[4, 4, 0, 0]} />
@@ -198,9 +206,9 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                 </div>
 
                 {/* Chart 2: Expense Categories */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4">Gastos por Categoría</h3>
-                    <div ref={chartCategoriesRef} className="bg-white flex justify-center">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4">Gastos por Categoría</h3>
+                    <div ref={chartCategoriesRef} className="bg-white dark:bg-transparent flex justify-center">
                         <ResponsiveContainer width="100%" height={250}>
                             <PieChart>
                                 <Pie
@@ -224,9 +232,9 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                 </div>
 
                 {/* Chart 3: Income Categories */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4">Ingresos por Categoría</h3>
-                    <div ref={chartIncomeCategoriesRef} className="bg-white flex justify-center">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4">Ingresos por Categoría</h3>
+                    <div ref={chartIncomeCategoriesRef} className="bg-white dark:bg-transparent flex justify-center">
                         {incomeCategoryChartData.length > 0 ? (
                             <ResponsiveContainer width="100%" height={250}>
                                 <PieChart>
@@ -254,14 +262,14 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                 </div>
 
                 {/* Chart 4: Profitability by Crop */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="text-lg font-semibold text-gray-700 mb-4">Rentabilidad por Cultivo</h3>
-                    <div ref={chartCropsRef} className="bg-white">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h3 className="text-lg font-semibold text-slate-800 mb-4">Rentabilidad por Cultivo</h3>
+                    <div ref={chartCropsRef} className="bg-white dark:bg-transparent">
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={data.landStats}>
                                 <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="cropName" />
-                                <YAxis />
+                                <XAxis dataKey="cropName" tick={{ fill: '#334155', fontSize: 12 }} stroke="#334155" tickLine={false} axisLine={{ stroke: '#334155' }} />
+                                <YAxis tick={{ fill: '#334155', fontSize: 12 }} stroke="#334155" tickLine={false} axisLine={{ stroke: '#334155' }} />
                                 <Tooltip formatter={(val: any) => `S/ ${Number(val || 0).toLocaleString('es-PE')}`} />
                                 <Bar dataKey="profit" name="Ganancia Neta" radius={[4, 4, 0, 0]}>
                                     {data.landStats.map((entry, index) => (
@@ -278,13 +286,13 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
             <div className="grid md:grid-cols-2 gap-6">
 
                 {/* 1. General Analysis */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-full">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-2">
                             <div className="bg-blue-100 p-2 rounded-lg text-blue-600">
                                 <Sparkles size={20} />
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-800">1. Análisis General IA</h3>
+                            <h3 className="text-lg font-semibold text-slate-900">1. Análisis General IA</h3>
                         </div>
                         <button
                             onClick={handleAnalyzeGeneral}
@@ -294,6 +302,8 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                             {loading.general ? 'Analizando...' : (analysis.general ? 'Regenerar' : 'Generar Análisis')}
                         </button>
                     </div>
+
+
 
                     <div className="flex-grow bg-slate-50 rounded-xl p-4 border border-slate-100 text-sm leading-relaxed text-slate-800">
                         {analysis.general ? (
@@ -308,13 +318,13 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                 </div>
 
                 {/* 2. Crop Analysis */}
-                <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col h-full">
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col h-full">
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-2">
                             <div className="bg-emerald-100 p-2 rounded-lg text-emerald-600">
                                 <Sparkles size={20} />
                             </div>
-                            <h3 className="text-lg font-semibold text-gray-800">2. Análisis por Cultivo IA</h3>
+                            <h3 className="text-lg font-semibold text-slate-900">2. Análisis por Cultivo IA</h3>
                         </div>
                         <button
                             onClick={handleAnalyzeCrops}
@@ -324,6 +334,8 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                             {loading.crops ? 'Analizando...' : (analysis.crops ? 'Regenerar' : 'Generar Análisis')}
                         </button>
                     </div>
+
+
 
                     <div className="flex-grow bg-slate-50 rounded-xl p-4 border border-slate-100 text-sm leading-relaxed text-slate-800">
                         {analysis.crops ? (
@@ -336,7 +348,6 @@ export default function FinancialAnalysis({ data }: { data: DashboardData }) {
                         )}
                     </div>
                 </div>
-
             </div>
         </div>
     );

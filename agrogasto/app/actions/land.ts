@@ -32,9 +32,14 @@ export async function createLand(formData: FormData) {
     const rentStartDate = rentStartDateStr ? new Date(rentStartDateStr) : null;
     const rentEndDate = rentEndDateStr ? new Date(rentEndDateStr) : null;
 
+    // [NEW]
+    const area = parseFloat(formData.get('area') as string) || 0;
+    const areaUnit = (formData.get('areaUnit') as string) || 'ha';
+
     try {
         await prisma.land.create({
-            data: { name, location, type, rentStartDate, rentEndDate },
+            // @ts-ignore
+            data: { name, location, type, rentStartDate, rentEndDate, area, areaUnit },
         });
         revalidatePath('/lands');
         return { success: true };
@@ -53,10 +58,15 @@ export async function updateLand(id: number, formData: FormData) {
     const rentStartDate = rentStartDateStr ? new Date(rentStartDateStr) : null;
     const rentEndDate = rentEndDateStr ? new Date(rentEndDateStr) : null;
 
+    // [NEW]
+    const area = parseFloat(formData.get('area') as string) || 0;
+    const areaUnit = (formData.get('areaUnit') as string) || 'ha';
+
     try {
         await prisma.land.update({
             where: { id },
-            data: { name, location, type, rentStartDate, rentEndDate },
+            // @ts-ignore
+            data: { name, location, type, rentStartDate, rentEndDate, area, areaUnit },
         });
         revalidatePath('/lands');
         return { success: true };

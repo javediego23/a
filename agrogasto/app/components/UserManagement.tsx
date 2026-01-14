@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getUsers, addUser, updateUserRole, deleteUser } from '@/app/actions/user-management';
+import { getUsers, addUser, updateUser, updateUserRole, deleteUser } from '@/app/actions/user-management';
 import { Plus, Trash2, Edit2, Shield, Loader2 } from 'lucide-react';
 
 interface User {
@@ -9,6 +9,7 @@ interface User {
     email: string;
     role: string;
     username: string | null;
+    name: string | null;
 }
 
 export default function UserManagement() {
@@ -19,8 +20,12 @@ export default function UserManagement() {
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [email, setEmail] = useState('');
+    const [name, setName] = useState('');
+    const [password, setPassword] = useState('');
     const [role, setRole] = useState('VIEWER');
     const [actionLoading, setActionLoading] = useState(false);
+    const [editingUser, setEditingUser] = useState<User | null>(null);
+
 
     useEffect(() => {
         loadUsers();
@@ -37,13 +42,34 @@ export default function UserManagement() {
         setLoading(false);
     };
 
-    const handleAddUser = async (e: React.FormEvent) => {
+    const handleEditClick = (user: User) => {
+        setEditingUser(user);
+        setEmail(user.email);
+        setName(user.name || '');
+        setRole(user.role);
+        // Password left empty intentionally
+        setIsModalOpen(true);
+    };
+
+    const handleSaveUser = async (e: React.FormEvent) => {
         e.preventDefault();
         setActionLoading(true);
-        const res = await addUser(email, role);
+
+        let res;
+        if (editingUser) {
+            // Update existing
+            res = await updateUser(editingUser.email, { name, role, password: password || undefined });
+        } else {
+            // Create new
+            res = await addUser(email, role, name, password);
+        }
+
         if (res.success) {
             setIsModalOpen(false);
+            setEditingUser(null);
             setEmail('');
+            setName('');
+            setPassword('');
             setRole('VIEWER');
             loadUsers();
         } else {
@@ -74,7 +100,14 @@ export default function UserManagement() {
             <div className="flex justify-between items-center">
                 <h3 className="text-xl font-bold">Usuarios y Permisos</h3>
                 <button
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                        setEditingUser(null); // Clear editing state for new user
+                        setEmail('');
+                        setName('');
+                        setPassword('');
+                        setRole('VIEWER');
+                        setIsModalOpen(true);
+                    }}
                     className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
                 >
                     <Plus size={18} /> Agregar Usuario
@@ -94,7 +127,7 @@ export default function UserManagement() {
                         {users.map(user => (
                             <tr key={user.id} className="hover:bg-black/5">
                                 <td className="p-4">
-                                    <div className="font-medium">{user.username}</div>
+                                    <div className="font-medium">{user.name || user.username || 'Sin Nombre'}</div>
                                     <div className="text-sm text-gray-500">{user.email}</div>
                                 </td>
                                 <td className="p-4">
@@ -110,6 +143,13 @@ export default function UserManagement() {
                                     </select>
                                 </td>
                                 <td className="p-4 text-right">
+                                    <button
+                                        onClick={() => handleEditClick(user)}
+                                        className="text-blue-500 hover:text-blue-700 p-2"
+                                        title="Editar usuario"
+                                    >
+                                        <Edit2 size={18} />
+                                    </button>
                                     {user.role !== 'OWNER' && (
                                         <button
                                             onClick={() => handleDelete(user.email)}
@@ -130,8 +170,18 @@ export default function UserManagement() {
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6">
-                        <h3 className="text-xl font-bold mb-4">Agregar Nuevo Usuario</h3>
-                        <form onSubmit={handleAddUser} className="space-y-4">
+                        <h3 className="text-xl font-bold mb-4">{editingUser ? 'Editar Usuario' : 'Agregar Nuevo Usuario'}</h3>
+                        <form onSubmit={handleSaveUser} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Nombre Completo</label>
+                                <input
+                                    type="text"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="Juan Pérez"
+                                />
+                            </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">Correo Electrónico</label>
                                 <input
@@ -141,8 +191,20 @@ export default function UserManagement() {
                                     className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500 outline-none"
                                     required
                                     placeholder="ejemplo@correo.com"
+                                    disabled={!!editingUser} // Email cannot be changed here easily
                                 />
                                 <p className="text-xs text-gray-500 mt-1">El usuario deberá registrarse con este correo.</p>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1">Contraseña</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500 outline-none"
+                                    placeholder="Mínimo 6 caracteres"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">Se intentará registrar en Supabase (requiere Service Key) o guardar en BD.</p>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">Rol Inicial</label>
@@ -159,7 +221,10 @@ export default function UserManagement() {
                             <div className="flex justify-end gap-2 mt-6">
                                 <button
                                     type="button"
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        setEditingUser(null); // Clear editing state on close
+                                    }}
                                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
                                 >
                                     Cancelar

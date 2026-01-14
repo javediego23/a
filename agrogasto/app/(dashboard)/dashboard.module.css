@@ -44,8 +44,8 @@
     .main {
         margin-left: 0 !important;
         width: 100%;
-        padding-top: 4rem;
-        /* Space for mobile header */
+        padding-top: 5rem;
+        /* Increased to account for fixed header */
     }
 }
 

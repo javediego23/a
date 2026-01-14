@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createLand, deleteLand, updateLand } from '@/app/actions/land';
-import { Map, Plus, MoreVertical, Trash2, Edit2, MapPin, CalendarClock, Home, Key } from 'lucide-react';
+import { Map, Plus, Trash2, Edit2, MapPin, CalendarClock, Home, Key, Ruler } from 'lucide-react';
 import styles from './lands.module.css';
 import { format } from 'date-fns';
 import * as XLSX from 'xlsx';
@@ -14,6 +14,8 @@ type Land = {
     type: string; // 'OWNED' | 'RENTED'
     rentStartDate: Date | null;
     rentEndDate: Date | null;
+    area: number;
+    areaUnit: string;
     _count?: { seasons: number };
 };
 
@@ -40,6 +42,7 @@ export default function LandManager({ initialLands }: { initialLands: Land[] }) 
             Nombre: l.name,
             Ubicacion: l.location,
             Tipo: l.type === 'OWNED' ? 'Propio' : 'Alquilado',
+            Area: `${l.area} ${l.areaUnit}`,
             'Inicio Alquiler': l.rentStartDate ? format(new Date(l.rentStartDate), 'dd/MM/yyyy') : '',
             'Fin Alquiler': l.rentEndDate ? format(new Date(l.rentEndDate), 'dd/MM/yyyy') : '',
             'Temporadas': l._count?.seasons || 0
@@ -76,6 +79,18 @@ export default function LandManager({ initialLands }: { initialLands: Land[] }) 
                         <label>Ubicación</label>
                         <input name="location" type="text" placeholder="Ej. Sector Norte" className={styles.input} defaultValue={editingLand?.location || ''} />
                     </div>
+
+                    <div className={styles.formGroup} style={{ flexGrow: 0.5 }}>
+                        <label>Área</label>
+                        <div className="flex gap-2">
+                            <input name="area" type="number" step="0.01" placeholder="0.00" className={styles.input} defaultValue={editingLand?.area || ''} required />
+                            <select name="areaUnit" className={styles.input} defaultValue={editingLand?.areaUnit || 'ha'} style={{ width: '80px' }}>
+                                <option value="ha">ha</option>
+                                <option value="m²">m²</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div className={styles.formGroup}>
                         <label>Tipo de Tenencia</label>
                         <select name="type" className={styles.input} value={editingLand ? undefined : landType} onChange={(e) => setLandType(e.target.value)} defaultValue={editingLand?.type || 'OWNED'}>
@@ -109,7 +124,10 @@ export default function LandManager({ initialLands }: { initialLands: Land[] }) 
                     const color = colors[land.id % colors.length];
 
                     return (
-                        <div key={land.id} className={styles.card} style={{ borderTop: `4px solid ${color}` }}>
+                        <div key={land.id}
+                            className={styles.card}
+                            style={{ borderTop: `4px solid ${color}` }}
+                        >
                             <div className={styles.cardHeader}>
                                 <div className={styles.iconBox} style={{ background: `${color}20` }}>
                                     <Map size={24} color={color} />
@@ -125,27 +143,33 @@ export default function LandManager({ initialLands }: { initialLands: Land[] }) 
                             </div>
 
                             <h3 className={styles.cardTitle}>{land.name}</h3>
+
                             {land.location && (
-                                <div className={styles.cardMeta}>
+                                <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                                     <MapPin size={14} />
                                     <span>{land.location}</span>
                                 </div>
                             )}
 
-                            <div className={styles.badges}>
+                            <div className="flex items-center gap-2 text-sm text-gray-700 mb-4 font-medium">
+                                <Ruler size={14} className="text-gray-400" />
+                                <span>{land.area} {land.areaUnit}</span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 mb-4">
                                 {land.type === 'OWNED' ? (
-                                    <span className={`${styles.badge} ${styles.owned}`}>
+                                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
                                         <Home size={12} /> Propio
                                     </span>
                                 ) : (
-                                    <span className={`${styles.badge} ${styles.rented}`}>
+                                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-600 border border-blue-500/20">
                                         <Key size={12} /> Alquilado
                                     </span>
                                 )}
                             </div>
 
                             {land.type === 'RENTED' && land.rentStartDate && land.rentEndDate && (
-                                <div className={styles.rentInfo}>
+                                <div className="flex items-center gap-2 text-xs text-gray-500 bg-slate-50 p-2 rounded-lg mb-4 border border-slate-100">
                                     <CalendarClock size={14} />
                                     <span>
                                         {format(new Date(land.rentStartDate), 'dd/MM/yy')} - {format(new Date(land.rentEndDate), 'dd/MM/yy')}
@@ -154,13 +178,23 @@ export default function LandManager({ initialLands }: { initialLands: Land[] }) 
                             )}
 
                             <div className={styles.cardFooter}>
-                                <span>{land._count?.seasons || 0} Temporadas</span>
+                                <div className="flex justify-between items-center w-full">
+                                    <span>{land._count?.seasons || 0} Temporadas</span>
+                                    {land._count?.seasons && land._count.seasons > 0 ? (
+                                        <span className="text-green-600 font-semibold bg-green-50 px-2 py-0.5 rounded text-xs">Activo</span>
+                                    ) : (
+                                        <span className="text-slate-400">Sin actividad</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     );
                 })}
                 {initialLands.length === 0 && (
-                    <p className={styles.empty}>No hay terrenos registrados.</p>
+                    <div className="col-span-full flex flex-col items-center justify-center p-12 text-gray-400 border border-dashed border-gray-300 rounded-2xl">
+                        <Home size={48} className="mb-4 opacity-20" />
+                        <p>No hay terrenos registrados.</p>
+                    </div>
                 )}
             </div>
         </>
