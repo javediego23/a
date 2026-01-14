@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Lock, Sprout, ArrowRight, Loader2 } from 'lucide-react';
+import { User, Lock, Sprout, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react';
 import styles from './login.module.css';
 import { createClient } from '@/utils/supabase/client';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const router = useRouter();
@@ -68,21 +69,27 @@ export default function LoginPage() {
                     <div className={styles.inputGroup}>
                         <Lock className={styles.inputIcon} size={20} />
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Contraseña"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className={styles.input}
                             required
                         />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                            style={{ background: 'none', border: 'none', padding: 0 }}
+                        >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
                     </div>
 
                     <button type="submit" className={styles.button} disabled={loading}>
                         {loading ? <Loader2 className="animate-spin" size={20} /> : 'Iniciar Sesión'}
                         {!loading && <ArrowRight size={18} className={styles.btnIcon} />}
                     </button>
-
-                    {/* Optional: Add Sign Up link if needed, or keep it strict */}
                 </form>
 
                 <div className={styles.footer}>

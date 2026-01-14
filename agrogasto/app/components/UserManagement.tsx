@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { getUsers, addUser, updateUser, updateUserRole, deleteUser } from '@/app/actions/user-management';
-import { Plus, Trash2, Edit2, Shield, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, Shield, Loader2, Eye, EyeOff } from 'lucide-react';
 
 interface User {
     id: number;
@@ -25,6 +25,7 @@ export default function UserManagement() {
     const [role, setRole] = useState('VIEWER');
     const [actionLoading, setActionLoading] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
+    const [showPassword, setShowPassword] = useState(false); // [NEW]
 
 
     useEffect(() => {
@@ -197,13 +198,22 @@ export default function UserManagement() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium mb-1">Contraseña</label>
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500 outline-none"
-                                    placeholder="Mínimo 6 caracteres"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className="w-full p-2 border rounded focus:ring-2 focus:ring-green-500 outline-none pr-10" // added pr-10
+                                        placeholder="Mínimo 6 caracteres"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                    >
+                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                    </button>
+                                </div>
                                 <p className="text-xs text-gray-500 mt-1">Se intentará registrar en Supabase (requiere Service Key) o guardar en BD.</p>
                             </div>
                             <div>
