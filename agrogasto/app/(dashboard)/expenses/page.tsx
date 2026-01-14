@@ -1,11 +1,13 @@
 import { getAllExpenses, getAllActiveSeasons } from '@/app/actions/transaction';
+import { getUserRole } from '@/utils/permissions';
 import GlobalExpenseManager from './expense-manager';
 import styles from './expenses.module.css';
 
 export default async function ExpensesPage() {
-    const [expensesRes, seasonsRes] = await Promise.all([
+    const [expensesRes, seasonsRes, userRole] = await Promise.all([
         getAllExpenses(),
-        getAllActiveSeasons()
+        getAllActiveSeasons(),
+        getUserRole()
     ]);
 
     const expenses = expensesRes.data || [];
@@ -18,7 +20,7 @@ export default async function ExpensesPage() {
                 <p className={styles.subtitle}>Gestione los gastos de todos sus terrenos y cultivos</p>
             </header>
 
-            <GlobalExpenseManager initialExpenses={expenses} activeSeasons={activeSeasons} />
+            <GlobalExpenseManager initialExpenses={expenses} activeSeasons={activeSeasons} userRole={userRole} />
         </div>
     );
 }

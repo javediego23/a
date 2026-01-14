@@ -31,7 +31,8 @@ type Expense = {
     };
 };
 
-export default function GlobalExpenseManager({ initialExpenses, activeSeasons }: { initialExpenses: Expense[], activeSeasons: Season[] }) {
+export default function GlobalExpenseManager({ initialExpenses, activeSeasons, userRole }: { initialExpenses: Expense[], activeSeasons: Season[], userRole: string | null | undefined }) {
+    const canEdit = userRole === 'OWNER' || userRole === 'EDITOR';
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState<number | null>(null);
     const [selectedSeasonId, setSelectedSeasonId] = useState<string>('');
@@ -135,10 +136,12 @@ export default function GlobalExpenseManager({ initialExpenses, activeSeasons }:
             </div>
 
             <div className={styles.actions}>
-                <button className={styles.addBtn} onClick={() => { setIsAdding(!isAdding); setEditingId(null); setSelectedSeasonId(''); setPreviewImage(null); }}>
-                    <Plus size={20} />
-                    <span>{isAdding ? 'Cancelar' : 'Registrar Gasto'}</span>
-                </button>
+                {canEdit && (
+                    <button className={styles.addBtn} onClick={() => { setIsAdding(!isAdding); setEditingId(null); setSelectedSeasonId(''); setPreviewImage(null); }}>
+                        <Plus size={20} />
+                        <span>{isAdding ? 'Cancelar' : 'Registrar Gasto'}</span>
+                    </button>
+                )}
                 <button onClick={handleExport} className={styles.addBtn} style={{ background: '#059669', marginLeft: '0.5rem' }}>
                     📊 Excel
                 </button>
@@ -377,6 +380,7 @@ export default function GlobalExpenseManager({ initialExpenses, activeSeasons }:
                                             }}
                                             className="p-1.5 text-slate-500 hover:bg-slate-100 rounded-lg transition-colors border border-transparent hover:border-slate-200"
                                             title="Editar"
+                                            style={{ display: canEdit ? 'block' : 'none' }}
                                         >
                                             <Edit2 size={16} />
                                         </button>
@@ -384,6 +388,7 @@ export default function GlobalExpenseManager({ initialExpenses, activeSeasons }:
                                             onClick={() => handleDelete(expense.id)}
                                             className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-transparent hover:border-red-100"
                                             title="Eliminar"
+                                            style={{ display: canEdit ? 'block' : 'none' }}
                                         >
                                             <Trash2 size={16} />
                                         </button>

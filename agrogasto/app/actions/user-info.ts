@@ -9,10 +9,16 @@ export async function getCurrentUserName() {
 
     if (!user) return null;
 
+    // Check Supabase metadata first (fastest/most direct from session)
+    if (user.user_metadata?.name) {
+        return user.user_metadata.name;
+    }
+
+    // Fallback to DB
     // @ts-ignore: Stale Prisma Client workaround
     const dbUser: any = await prisma.user.findUnique({
         where: { email: user.email },
     });
 
-    return dbUser?.name || dbUser?.username || 'Usuario';
+    return dbUser?.name || dbUser?.username || user.email?.split('@')[0] || 'Usuario';
 }
